@@ -1,0 +1,132 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  agents    AIAgent[]
+  sessions  Session[]
+  analytics Analytics[]
+  conversations Conversation[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model AIAgent {
+  id           String   @id @default(cuid())
+  name         String
+  type         String   // 'white_collar', 'specialist', 'generalist'
+  role         String
+  capabilities String   // JSON array stored as string
+  status       String   // 'training', 'ready', 'deployed', 'inactive'
+  config       String   // JSON object stored as string
+  performance  String   // JSON object stored as string
+  userId       String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+  analytics    Analytics[]
+  toolExecutions ToolExecution[]
+
+  @@map("ai_agents")
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  agentId   String
+  userId    String
+  messages  String   // JSON array of messages
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  agent        AIAgent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  toolExecutions ToolExecution[]
+
+  @@map("conversations")
+}
+
+model Analytics {
+  id             String   @id @default(cuid())
+  userId         String?
+  agentId        String?
+  eventType      String   // 'agent_created', 'agent_tested', 'agent_deployed', etc.
+  eventData      String   // JSON object stored as string
+  metrics        String   // JSON object stored as string
+  processingTime Int?
+  timestamp      DateTime @default(now())
+
+  // Relations
+  user  User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  agent AIAgent? @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
+  @@map("analytics")
+}
+
+model ToolExecution {
+  id             String   @id @default(cuid())
+  toolName       String
+  parameters     String   // JSON object stored as string
+  result         String   // JSON object stored as string
+  success        Boolean
+  processingTime Int
+  error          String?
+  agentId        String?
+  conversationId String?
+  timestamp      DateTime @default(now())
+
+  // Relations
+  agent        AIAgent?      @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  @@map("tool_executions")
+}
+
+// Legacy models (can be removed if not needed)
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("posts")
+}
