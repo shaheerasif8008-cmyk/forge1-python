@@ -114,6 +114,7 @@ interface MultiLLMConfiguratorProps {
   onChange: (config: MultiLLMConfig) => void;
 }
 
+export { MultiLLMConfig };
 export default function MultiLLMConfigurator({ config, onChange }: MultiLLMConfiguratorProps) {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("models");
