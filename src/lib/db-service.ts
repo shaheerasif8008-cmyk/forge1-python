@@ -17,7 +17,46 @@ export interface DbAgent {
       short_term: boolean;
       long_term: boolean;
       context_window: number;
+      episodic?: boolean;
+      semantic?: boolean;
+      working_memory?: number;
+      retention?: number;
     };
+    voice_config?: {
+      voice: string;
+      pitch: number;
+      speed: number;
+      emotion: 'neutral' | 'happy' | 'sad' | 'excited' | 'calm' | 'professional';
+      accent: 'american' | 'british' | 'australian' | 'neutral';
+    };
+    emotional_config?: {
+      empathy: number;
+      adaptability: number;
+      expressiveness: number;
+      patience: number;
+      humor: number;
+      professionalism: number;
+    };
+    appearance_config?: {
+      avatar: string;
+      theme: 'light' | 'dark' | 'auto';
+      primaryColor: string;
+      secondaryColor: string;
+      uiStyle: 'minimal' | 'professional' | 'modern' | 'playful';
+    };
+    communication_style?: 'formal' | 'casual' | 'technical' | 'empathetic' | 'direct';
+    response_style?: 'detailed' | 'concise' | 'balanced';
+    creativity?: number;
+    analytical?: number;
+    autonomy?: number;
+    enable_proactive?: boolean;
+    enable_memory?: boolean;
+    enable_learning?: boolean;
+    enable_emotional?: boolean;
+    enable_multimodal?: boolean;
+    learning_rate?: number;
+    adaptation_speed?: number;
+    multi_llm_config?: any;
   };
   performance: {
     accuracy: number;

@@ -86,14 +86,27 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        // Ensure all required fields are present
-        const agentData = {
+        // Transform the form data to match database structure
+        const transformedData = {
           ...data,
+          // Transform memory config from form format to database format
+          config: {
+            ...data.config,
+            memory_config: {
+              short_term: data.config.memory_config.shortTerm,
+              long_term: data.config.memory_config.longTerm,
+              context_window: data.config.memory_config.workingMemory || 8,
+              episodic: data.config.memory_config.episodic,
+              semantic: data.config.memory_config.semantic,
+              working_memory: data.config.memory_config.workingMemory,
+              retention: data.config.memory_config.retention
+            }
+          },
           status: data.status || 'training', // Default status if not provided
           userId: userId
         };
 
-        const newAgent = await dbService.createAgent(agentData);
+        const newAgent = await dbService.createAgent(transformedData);
 
         // Log analytics
         await dbService.createAnalytics(
