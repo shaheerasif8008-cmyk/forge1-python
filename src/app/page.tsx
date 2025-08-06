@@ -7,6 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
+import { useApi, API_ENDPOINTS } from "@/lib/api-wrapper";
+import { ErrorBoundary } from "@/lib/error-handling";
 import MainLayout from "@/components/MainLayout";
 import CreateAIEmployee from "@/components/CreateAIEmployee";
 import CreateAIEmployeeAdvanced from "@/components/CreateAIEmployeeAdvanced";
@@ -164,8 +167,15 @@ const systemLayers = [
 ];
 
 export default function Home() {
+  const { toast } = useToast();
+  const { post } = useApi();
   const [selectedLayer, setSelectedLayer] = useState<string | null>(null);
   const [systemStatus, setSystemStatus] = useState<"running" | "paused">("running");
+  const [employeeCreated, setEmployeeCreated] = useState(false);
+
+  const handleEmployeeCreated = () => {
+    setEmployeeCreated(prev => !prev); // Toggle to trigger refresh
+  };
 
   const toggleSystemStatus = () => {
     setSystemStatus(systemStatus === "running" ? "paused" : "running");
@@ -192,9 +202,62 @@ export default function Home() {
     );
   };
 
+  const generateReport = async () => {
+  try {
+    toast({
+      title: "Generating Report",
+      description: "Please wait while we generate your AI workforce report...",
+    });
+
+    const result = await post(API_ENDPOINTS.ANALYTICS, {
+      action: 'generate_report',
+      data: {
+        type: 'system_overview',
+        format: 'pdf'
+      }
+    }, {
+      context: 'report generation',
+      showSuccessToast: false,
+      showErrorToast: true
+    });
+
+    if (result.success && result.data?.report) {
+      // Create a download link for the report
+      const blob = new Blob([result.data.report], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ai-workforce-report-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Report Generated",
+        description: "Your AI workforce report has been downloaded successfully!",
+      });
+    } else {
+      toast({
+        title: "Generation Failed",
+        description: result.error || "Report generation failed. Please try again.",
+        variant: "destructive",
+      });
+    }
+  } catch (error) {
+    console.error('Error generating report:', error);
+    toast({
+      title: "Error",
+      description: "Error generating report. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
+
   return (
     <MainLayout>
-      <div className="space-y-8">
+      <ErrorBoundary>
+        <div className="space-y-8">
         {/* Welcome Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
           <div>
@@ -204,7 +267,7 @@ export default function Home() {
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={generateReport}>
               <FileText className="w-4 h-4 mr-2" />
               Generate Report
             </Button>
@@ -382,7 +445,20 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="employees" className="space-y-6">
-            <CreateAIEmployeeAdvanced />
+            <Tabs defaultValue="create" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="create">Create Employee</TabsTrigger>
+                <TabsTrigger value="manage">Manage Employees</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="create">
+                <CreateAIEmployeeAdvanced onEmployeeCreated={handleEmployeeCreated} />
+              </TabsContent>
+              
+              <TabsContent value="manage">
+                <ManageAIEmployees key={employeeCreated} />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           <TabsContent value="monitoring" className="space-y-6">
@@ -589,6 +665,7 @@ export default function Home() {
           </TabsContent>
         </Tabs>
       </div>
+      </ErrorBoundary>
     </MainLayout>
   );
 }

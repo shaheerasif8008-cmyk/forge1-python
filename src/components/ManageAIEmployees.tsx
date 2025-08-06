@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Brain, 
   Play, 
@@ -18,7 +19,14 @@ import {
   Zap,
   CheckCircle,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Search,
+  Filter,
+  Users,
+  TrendingUp,
+  Activity,
+  Plus,
+  RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -59,16 +67,28 @@ interface TestChatMessage {
 export default function ManageAIEmployees() {
   const { toast } = useToast();
   const [agents, setAgents] = useState<AIAgent[]>([]);
+  const [filteredAgents, setFilteredAgents] = useState<AIAgent[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<AIAgent | null>(null);
   const [testMessages, setTestMessages] = useState<TestChatMessage[]>([]);
   const [testInput, setTestInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<{[key: string]: boolean}>({});
+  
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("name");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   useEffect(() => {
     fetchAgents();
   }, []);
+
+  useEffect(() => {
+    filterAndSortAgents();
+  }, [agents, searchTerm, statusFilter, typeFilter, sortBy]);
 
   const fetchAgents = async () => {
     try {
@@ -79,6 +99,62 @@ export default function ManageAIEmployees() {
       console.error('Error fetching agents:', error);
     }
   };
+
+  const filterAndSortAgents = () => {
+    let filtered = [...agents];
+
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(agent => 
+        agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        agent.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        agent.capabilities.some(cap => cap.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(agent => agent.status === statusFilter);
+    }
+
+    // Apply type filter
+    if (typeFilter !== "all") {
+      filtered = filtered.filter(agent => agent.type === typeFilter);
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return a.name.localeCompare(b.name);
+        case "status":
+          return a.status.localeCompare(b.status);
+        case "created":
+          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        case "performance":
+          const aPerf = (a.performance.accuracy + a.performance.speed + a.performance.reliability) / 3;
+          const bPerf = (b.performance.accuracy + b.performance.speed + b.performance.reliability) / 3;
+          return bPerf - aPerf;
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredAgents(filtered);
+  };
+
+  const getAgentStats = () => {
+    const total = agents.length;
+    const active = agents.filter(a => a.status === 'ready' || a.status === 'deployed').length;
+    const training = agents.filter(a => a.status === 'training').length;
+    const avgPerformance = agents.length > 0 
+      ? agents.reduce((sum, agent) => sum + (agent.performance.accuracy + agent.performance.speed + agent.performance.reliability) / 3, 0) / agents.length 
+      : 0;
+    
+    return { total, active, training, avgPerformance: Math.round(avgPerformance * 100) };
+  };
+
+  const agentStats = getAgentStats();
 
   const deployAgent = async (agentId: string) => {
     setActionLoading(prev => ({ ...prev, [agentId]: true }));
@@ -322,29 +398,158 @@ export default function ManageAIEmployees() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
+      {/* Dashboard Header with Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Users className="w-4 h-4 text-blue-600" />
+              <div>
+                <p className="text-2xl font-bold">{agentStats.total}</p>
+                <p className="text-xs text-muted-foreground">Total Employees</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Activity className="w-4 h-4 text-green-600" />
+              <div>
+                <p className="text-2xl font-bold">{agentStats.active}</p>
+                <p className="text-xs text-muted-foreground">Active</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Clock className="w-4 h-4 text-yellow-600" />
+              <div>
+                <p className="text-2xl font-bold">{agentStats.training}</p>
+                <p className="text-xs text-muted-foreground">Training</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="w-4 h-4 text-purple-600" />
+              <div>
+                <p className="text-2xl font-bold">{agentStats.avgPerformance}%</p>
+                <p className="text-xs text-muted-foreground">Avg Performance</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Search and Filter Controls */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center space-x-2">
+              <Brain className="w-5 h-5" />
+              <span>AI Employees Management</span>
+            </CardTitle>
+            <div className="flex items-center space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  const tabsList = document.querySelector('[value="create"]');
+                  if (tabsList) {
+                    (tabsList as HTMLElement).click();
+                  }
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create New
+              </Button>
+              <Button variant="outline" size="sm" onClick={fetchAgents}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Search employees by name, role, or capabilities..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="training">Training</SelectItem>
+                  <SelectItem value="ready">Ready</SelectItem>
+                  <SelectItem value="deployed">Deployed</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="white_collar">White Collar</SelectItem>
+                  <SelectItem value="specialist">Specialist</SelectItem>
+                  <SelectItem value="generalist">Generalist</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Sort By" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                  <SelectItem value="created">Created</SelectItem>
+                  <SelectItem value="performance">Performance</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Employee List */}
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Brain className="w-5 h-5" />
-                <span>AI Employees</span>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center space-x-2">
+                  <Users className="w-5 h-5" />
+                  <span>Employees ({filteredAgents.length})</span>
+                </span>
               </CardTitle>
-              <CardDescription>
-                Manage and test your created AI employees
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3 max-h-96 overflow-y-auto">
-                {agents.length === 0 ? (
+                {filteredAgents.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <Brain className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No AI employees created yet</p>
-                    <p className="text-sm">Create your first AI employee to get started</p>
+                    <p>No AI employees found</p>
+                    <p className="text-sm">Try adjusting your filters or create a new employee</p>
                   </div>
                 ) : (
-                  agents.map((agent) => (
+                  filteredAgents.map((agent) => (
                     <div
                       key={agent.id}
                       className={`p-4 border rounded-lg cursor-pointer transition-all ${
@@ -383,6 +588,16 @@ export default function ManageAIEmployees() {
                             </Badge>
                           )}
                         </div>
+                      </div>
+                      <div className="mt-2">
+                        <div className="flex justify-between text-xs text-gray-500 mb-1">
+                          <span>Performance</span>
+                          <span>{Math.round((agent.performance.accuracy + agent.performance.speed + agent.performance.reliability) / 3 * 100)}%</span>
+                        </div>
+                        <Progress 
+                          value={(agent.performance.accuracy + agent.performance.speed + agent.performance.reliability) / 3 * 100} 
+                          className="h-1" 
+                        />
                       </div>
                     </div>
                   ))

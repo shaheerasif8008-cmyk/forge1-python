@@ -142,8 +142,30 @@ const CAPABILITIES = [
 const TOOLS = [
   'web_search', 'calculator', 'data_analyzer', 'document_parser',
   'legal_database', 'compliance_checker', 'code_executor', 'file_manager',
-  'image_generator', 'audio_processor', 'video_analyzer', 'spreadsheet_editor',
-  'email_client', 'calendar_manager', 'project_tracker', 'crm_integration'
+  'email_client', 'calendar_manager', 'spreadsheet_editor', 'presentation_creator',
+  'image_generator', 'audio_processor', 'video_analyzer', 'pdf_reader',
+  'crm_integration', 'project_tracker', 'task_manager', 'meeting_scheduler',
+  'translator', 'summarizer', 'plagiarism_checker', 'data_visualizer',
+  'api_connector', 'database_query', 'workflow_automation', 'report_generator',
+  'social_media_manager', 'content_optimizer', 'seo_analyzer', 'market_researcher',
+  'financial_modeling', 'risk_assessment', 'compliance_monitor', 'audit_tool',
+  'contract_analyzer', 'due_diligence', 'portfolio_manager', 'trading_simulator',
+  'hr_management', 'recruitment_screening', 'performance_tracker', 'training_coordinator',
+  'inventory_manager', 'supply_chain_optimizer', 'quality_control', 'logistics_planner',
+  'customer_support', 'ticket_system', 'feedback_analyzer', 'satisfaction_surveyor',
+  'research_assistant', 'literature_review', 'citation_manager', 'academic_writer',
+  'technical_documenter', 'user_manual_creator', 'knowledge_base_manager', 'helpdesk_system',
+  'voice_assistant', 'chatbot_builder', 'sentiment_analyzer', 'emotion_detector',
+  'face_recognition', 'object_detection', 'text_to_speech', 'speech_to_text',
+  'optical_character_recognition', 'handwriting_recognition', 'barcode_scanner', 'qr_code_generator',
+  'blockchain_analyzer', 'cryptocurrency_tracker', 'smart_contract_auditor', 'nft_manager',
+  'virtual_reality_creator', 'augmented_reality_builder', '3d_modeler', 'animation_generator',
+  'music_composer', 'audio_editor', 'sound_effects_generator', 'podcast_producer',
+  'video_editor', 'motion_graphics_creator', 'green_screen_processor', 'live_streamer',
+  'game_developer', 'level_designer', 'character_animator', 'physics_simulator',
+  'ai_trainer', 'model_optimizer', 'hyperparameter_tuner', 'neural_architect',
+  'quantum_computing', 'cryptography_tool', 'security_scanner', 'penetration_tester',
+  'network_monitor', 'system_optimizer', 'performance_profiler', 'debugging_assistant'
 ];
 
 const EMPLOYEE_TEMPLATES = [
@@ -189,7 +211,7 @@ const EMPLOYEE_TEMPLATES = [
   }
 ];
 
-export default function CreateAIEmployeeAdvanced() {
+export default function CreateAIEmployeeAdvanced({ onEmployeeCreated }: { onEmployeeCreated?: () => void }) {
   const { toast } = useToast();
   const [formData, setFormData] = useState<AdvancedAIEmployeeFormData>({
     name: '',
@@ -468,6 +490,11 @@ export default function CreateAIEmployeeAdvanced() {
           enableMultimodal: false
         });
         setActiveTab("basic");
+
+        // Call the callback to refresh the employee list
+        if (onEmployeeCreated) {
+          onEmployeeCreated();
+        }
       } else {
         toast({
           title: "Error",

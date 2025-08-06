@@ -93,14 +93,30 @@ export async function POST(request: NextRequest) {
           config: {
             ...data.config,
             memory_config: {
-              short_term: data.config.memory_config.shortTerm,
-              long_term: data.config.memory_config.longTerm,
-              context_window: data.config.memory_config.workingMemory || 8,
-              episodic: data.config.memory_config.episodic,
-              semantic: data.config.memory_config.semantic,
-              working_memory: data.config.memory_config.workingMemory,
-              retention: data.config.memory_config.retention
-            }
+              short_term: data.config.memory_config.shortTerm || data.config.memory_config.short_term,
+              long_term: data.config.memory_config.longTerm || data.config.memory_config.long_term,
+              context_window: data.config.memory_config.workingMemory || data.config.memory_config.context_window || 8,
+              episodic: data.config.memory_config.episodic || false,
+              semantic: data.config.memory_config.semantic || false,
+              working_memory: data.config.memory_config.workingMemory || 8,
+              retention: data.config.memory_config.retention || 0.8
+            },
+            // Handle advanced configuration fields if they exist
+            ...(data.config.voice_config && { voice_config: data.config.voice_config }),
+            ...(data.config.emotional_config && { emotional_config: data.config.emotional_config }),
+            ...(data.config.appearance_config && { appearance_config: data.config.appearance_config }),
+            ...(data.config.communication_style && { communication_style: data.config.communication_style }),
+            ...(data.config.response_style && { response_style: data.config.response_style }),
+            ...(data.config.creativity !== undefined && { creativity: data.config.creativity }),
+            ...(data.config.analytical !== undefined && { analytical: data.config.analytical }),
+            ...(data.config.autonomy !== undefined && { autonomy: data.config.autonomy }),
+            ...(data.config.enable_proactive !== undefined && { enable_proactive: data.config.enable_proactive }),
+            ...(data.config.enable_memory !== undefined && { enable_memory: data.config.enable_memory }),
+            ...(data.config.enable_learning !== undefined && { enable_learning: data.config.enable_learning }),
+            ...(data.config.enable_emotional !== undefined && { enable_emotional: data.config.enable_emotional }),
+            ...(data.config.enable_multimodal !== undefined && { enable_multimodal: data.config.enable_multimodal }),
+            ...(data.config.learning_rate !== undefined && { learning_rate: data.config.learning_rate }),
+            ...(data.config.adaptation_speed !== undefined && { adaptation_speed: data.config.adaptation_speed })
           },
           status: data.status || 'training', // Default status if not provided
           userId: userId

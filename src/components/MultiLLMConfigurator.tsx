@@ -220,6 +220,114 @@ export default function MultiLLMConfigurator({ config, onChange }: MultiLLMConfi
     return capConfig ? capConfig.icon : Target;
   };
 
+  const testConfiguration = async () => {
+    try {
+      toast({
+        title: "Testing Configuration",
+        description: "Validating your multi-LLM setup...",
+      });
+
+      const response = await fetch('/api/forge1/multi-llm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'test_multi_llm_config',
+          data: {
+            config: currentConfig
+          }
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        const { testResult } = result;
+        
+        if (testResult.isValid) {
+          toast({
+            title: "Configuration Valid",
+            description: `✅ ${testResult.enabledModels} models ready for collaboration using ${testResult.collaborationMode} mode`,
+          });
+        } else {
+          toast({
+            title: "Configuration Issues",
+            description: `⚠️ ${testResult.warnings.join(', ')}`,
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Test Failed",
+          description: result.error || "Configuration test failed",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error testing configuration:', error);
+      toast({
+        title: "Test Error",
+        description: "Failed to test configuration",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const testExecution = async () => {
+    try {
+      toast({
+        title: "Testing Multi-LLM Execution",
+        description: "Running sample collaboration test...",
+      });
+
+      const response = await fetch('/api/forge1/multi-llm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'execute_multi_llm',
+          data: {
+            prompt: "What are the key benefits of using multiple AI models in collaboration?",
+            config: currentConfig,
+            context: {
+              taskType: "analysis",
+              domain: "AI systems"
+            }
+          }
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        const { result: executionResult } = result;
+        
+        toast({
+          title: "Execution Test Successful",
+          description: `✅ ${executionResult.modelResponses.length} models collaborated in ${executionResult.collaborationMetrics.totalProcessingTime}ms`,
+        });
+
+        // Log detailed results for debugging
+        console.log('Multi-LLM Execution Result:', executionResult);
+      } else {
+        toast({
+          title: "Execution Test Failed",
+          description: result.error || "Multi-LLM execution failed",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error testing execution:', error);
+      toast({
+        title: "Test Error",
+        description: "Failed to test multi-LLM execution",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card className="border-l-4 border-l-blue-500">
@@ -461,6 +569,34 @@ export default function MultiLLMConfigurator({ config, onChange }: MultiLLMConfi
                         <div className="text-sm text-gray-600">{strategy.description}</div>
                       </div>
                     ))}
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Test Configuration</CardTitle>
+                    <CardDescription>Test your multi-LLM setup</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                      <Button onClick={testConfiguration} className="w-full">
+                        <Zap className="w-4 h-4 mr-2" />
+                        Test Multi-LLM Configuration
+                      </Button>
+                      <Button 
+                        onClick={testExecution} 
+                        variant="outline" 
+                        className="w-full"
+                        disabled={currentConfig.models.filter(m => m.enabled).length === 0}
+                      >
+                        <Brain className="w-4 h-4 mr-2" />
+                        Test Sample Execution
+                      </Button>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      <p>• Test Configuration: Validates your setup</p>
+                      <p>• Test Execution: Runs a sample collaboration</p>
+                    </div>
                   </CardContent>
                 </Card>
               </div>

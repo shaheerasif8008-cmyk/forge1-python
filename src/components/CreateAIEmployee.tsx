@@ -40,7 +40,20 @@ const CAPABILITIES = [
 
 const TOOLS = [
   'web_search', 'calculator', 'data_analyzer', 'document_parser',
-  'legal_database', 'compliance_checker', 'code_executor', 'file_manager'
+  'legal_database', 'compliance_checker', 'code_executor', 'file_manager',
+  'email_client', 'calendar_manager', 'spreadsheet_editor', 'presentation_creator',
+  'image_generator', 'audio_processor', 'video_analyzer', 'pdf_reader',
+  'crm_integration', 'project_tracker', 'task_manager', 'meeting_scheduler',
+  'translator', 'summarizer', 'plagiarism_checker', 'data_visualizer',
+  'api_connector', 'database_query', 'workflow_automation', 'report_generator',
+  'social_media_manager', 'content_optimizer', 'seo_analyzer', 'market_researcher',
+  'financial_modeling', 'risk_assessment', 'compliance_monitor', 'audit_tool',
+  'contract_analyzer', 'due_diligence', 'portfolio_manager', 'trading_simulator',
+  'hr_management', 'recruitment_screening', 'performance_tracker', 'training_coordinator',
+  'inventory_manager', 'supply_chain_optimizer', 'quality_control', 'logistics_planner',
+  'customer_support', 'ticket_system', 'feedback_analyzer', 'satisfaction_surveyor',
+  'research_assistant', 'literature_review', 'citation_manager', 'academic_writer',
+  'technical_documenter', 'user_manual_creator', 'knowledge_base_manager', 'helpdesk_system'
 ];
 
 const TEMPLATES = [
@@ -51,7 +64,7 @@ const TEMPLATES = [
   { name: 'Content Writer', icon: '📝', role: 'Content Creation Specialist' },
 ];
 
-export default function CreateAIEmployee() {
+export default function CreateAIEmployee({ onEmployeeCreated }: { onEmployeeCreated?: () => void }) {
   const { toast } = useToast();
   const [formData, setFormData] = useState<AIEmployeeFormData>({
     name: '',
@@ -130,6 +143,95 @@ export default function CreateAIEmployee() {
     }
   };
 
+  const loadCustomTemplates = () => {
+    try {
+      const savedTemplates = JSON.parse(localStorage.getItem('aiEmployeeTemplates') || '[]');
+      
+      if (savedTemplates.length === 0) {
+        toast({
+          title: "No Custom Templates",
+          description: "No custom templates found. Create and save a template first!",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Show a simple template selection (in a real app, this would be a modal)
+      const templateNames = savedTemplates.map(t => t.name).join(', ');
+      const latestTemplate = savedTemplates[savedTemplates.length - 1];
+      
+      // Apply the latest template
+      setFormData(prev => ({
+        ...prev,
+        name: latestTemplate.name,
+        role: latestTemplate.role,
+        type: latestTemplate.type,
+        model: latestTemplate.model,
+        temperature: latestTemplate.temperature,
+        maxTokens: latestTemplate.maxTokens,
+        capabilities: latestTemplate.capabilities,
+        tools: latestTemplate.tools,
+        memoryConfig: latestTemplate.memoryConfig,
+        useMultiLLM: latestTemplate.useMultiLLM,
+        multiLLMConfig: latestTemplate.multiLLMConfig
+      }));
+
+      toast({
+        title: "Template Loaded",
+        description: `Applied template "${latestTemplate.name}". ${savedTemplates.length > 1 ? `${savedTemplates.length - 1} more templates available.` : ''}`,
+      });
+    } catch (error) {
+      console.error('Error loading custom templates:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load custom templates.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const saveAsTemplate = async () => {
+    try {
+      const templateData = {
+        name: formData.name,
+        role: formData.role,
+        type: formData.type,
+        model: formData.model,
+        temperature: formData.temperature,
+        maxTokens: formData.maxTokens,
+        capabilities: formData.capabilities,
+        tools: formData.tools,
+        memoryConfig: formData.memoryConfig,
+        useMultiLLM: formData.useMultiLLM,
+        multiLLMConfig: formData.multiLLMConfig,
+        createdAt: new Date().toISOString()
+      };
+
+      // Save to localStorage for now (in production, this would be saved to a database)
+      const existingTemplates = JSON.parse(localStorage.getItem('aiEmployeeTemplates') || '[]');
+      const newTemplate = {
+        id: Date.now().toString(),
+        ...templateData,
+        icon: '🤖' // Default icon for custom templates
+      };
+      
+      existingTemplates.push(newTemplate);
+      localStorage.setItem('aiEmployeeTemplates', JSON.stringify(existingTemplates));
+
+      toast({
+        title: "Template Saved",
+        description: `Template "${formData.name}" has been saved successfully!`,
+      });
+    } catch (error) {
+      console.error('Error saving template:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save template. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const createAIEmployee = async () => {
     if (!formData.name || !formData.role) {
       toast({
@@ -198,6 +300,11 @@ export default function CreateAIEmployee() {
           },
           useMultiLLM: false
         });
+
+        // Call the callback to refresh the employee list
+        if (onEmployeeCreated) {
+          onEmployeeCreated();
+        }
       } else {
         toast({
           title: "Error",
@@ -474,12 +581,8 @@ export default function CreateAIEmployee() {
               <div className="space-x-2">
                 <Button 
                   variant="outline" 
-                  onClick={() => {
-                    toast({
-                      title: "Coming Soon",
-                      description: "Template saving functionality will be available soon!",
-                    });
-                  }}
+                  onClick={saveAsTemplate}
+                  disabled={isCreating || !formData.name || !formData.role}
                 >
                   Save as Template
                 </Button>
@@ -528,12 +631,7 @@ export default function CreateAIEmployee() {
             <Button 
               variant="outline" 
               className="h-20 flex-col"
-              onClick={() => {
-                toast({
-                  title: "Coming Soon",
-                  description: "Custom template creation functionality will be available soon!",
-                });
-              }}
+              onClick={loadCustomTemplates}
             >
               <div className="w-8 h-8 mb-2">🔧</div>
               <span className="text-sm">Custom Template</span>
