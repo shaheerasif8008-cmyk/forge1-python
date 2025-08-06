@@ -1,0 +1,14 @@
+# Execute these commands after creating the GitHub repository
+
+# Navigate to project directory
+cd /home/z/forge1-python
+
+# Add remote repository (update URL if needed)
+git remote add origin https://github.com/shaheerasif8008-cmyk/forge1-python.git
+
+# Push to GitHub
+git push -u origin main
+
+# Verify push succeeded
+git remote -v
+git status
