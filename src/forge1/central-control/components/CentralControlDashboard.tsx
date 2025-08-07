@@ -28,7 +28,7 @@ import {
   Shield,
   Cloud,
   Heart,
-  Cube,
+  Box,
   Workflow,
   TrendingUp,
   BarChart3,
@@ -144,7 +144,7 @@ export default function CentralControlDashboard() {
       case 'emotional':
         return <Heart className="w-4 h-4" />;
       case 'spatial':
-        return <Cube className="w-4 h-4" />;
+        return <Box className="w-4 h-4" />;
       default:
         return <Settings className="w-4 h-4" />;
     }
@@ -203,7 +203,7 @@ export default function CentralControlDashboard() {
     { id: 'compliance', name: 'Compliance & Legal', icon: Shield },
     { id: 'saas_agents', name: 'SaaS-as-Agent', icon: Cloud },
     { id: 'emotional', name: 'Emotional AI', icon: Heart },
-    { id: 'spatial', name: 'Spatial Agents / XR', icon: Cube }
+    { id: 'spatial', name: 'Spatial Agents / XR', icon: Box }
   ];
 
   return (
@@ -718,21 +718,21 @@ export default function CentralControlDashboard() {
                 {systemHealth ? (
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {Object.entries(systemHealth.module_health).map(([moduleId, health]) => {
-                      const module = systemStatus?.modules.find((m: any) => m.id === moduleId);
+                      const moduleData = systemStatus?.modules.find((m: any) => m.id === moduleId);
                       return (
                         <div key={moduleId} className="p-3 border rounded">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center space-x-2">
-                              {getModuleIcon(module?.type || moduleId)}
-                              <span className="font-medium">{module?.name || moduleId}</span>
+                              {getModuleIcon(moduleData?.type || moduleId)}
+                              <span className="font-medium">{moduleData?.name || moduleId}</span>
                             </div>
                             <Badge variant="outline" className={getHealthColor(health)}>
                               {health.toUpperCase()}
                             </Badge>
                           </div>
-                          {module && (
+                          {moduleData && (
                             <div className="text-sm text-muted-foreground">
-                              Uptime: {module.performance.uptime}% • Response: {module.performance.response_time}ms
+                              Uptime: {moduleData.performance.uptime}% • Response: {moduleData.performance.response_time}ms
                             </div>
                           )}
                         </div>

@@ -1,4 +1,5 @@
-import ZAI from 'z-ai-web-dev-sdk';
+// ZAI SDK should only be used in backend API routes
+// import ZAI from 'z-ai-web-dev-sdk';
 
 export interface CentralAISystem {
   id: string;
@@ -150,7 +151,8 @@ export class CentralControlService {
   private alerts: SystemAlert[] = [];
 
   constructor() {
-    this.initializeZAI();
+    // ZAI SDK should only be used in backend API routes
+    // this.initializeZAI();
     this.initializeSystem();
   }
 
@@ -357,7 +359,9 @@ export class CentralControlService {
         type: 'error',
         module_id: task.modules_involved[0],
         message: `Task execution failed: ${systemTask.name}`,
-        details: { error: systemTask.error_message, taskId: systemTask.id }
+        details: { error: systemTask.error_message, taskId: systemTask.id },
+        acknowledged: false,
+        resolved: false
       });
     }
 
@@ -382,20 +386,20 @@ export class CentralControlService {
   }
 
   private async executeSequential(task: SystemTask): Promise<any> {
-    const results: any[] = {};
+    const results: Record<string, any> = {};
     
     for (const moduleId of task.modules_involved) {
-      const module = this.modules.get(moduleId);
-      if (!module) {
+      const moduleInstance = this.modules.get(moduleId);
+      if (!moduleInstance) {
         throw new Error(`Module not found: ${moduleId}`);
       }
 
-      if (module.status !== 'active') {
+      if (moduleInstance.status !== 'active') {
         throw new Error(`Module not active: ${moduleId}`);
       }
 
       try {
-        const result = await this.executeModule(module, task.input_data);
+        const result = await this.executeModule(moduleInstance, task.input_data);
         results[moduleId] = result;
         task.progress = ((Object.keys(results).length / task.modules_involved.length) * 100);
         task.updated_at = new Date();
@@ -409,12 +413,12 @@ export class CentralControlService {
 
   private async executeParallel(task: SystemTask): Promise<any> {
     const promises = task.modules_involved.map(async (moduleId) => {
-      const module = this.modules.get(moduleId);
-      if (!module || module.status !== 'active') {
+      const moduleInstance = this.modules.get(moduleId);
+      if (!moduleInstance || moduleInstance.status !== 'active') {
         throw new Error(`Module not available: ${moduleId}`);
       }
 
-      return await this.executeModule(module, task.input_data);
+      return await this.executeModule(moduleInstance, task.input_data);
     });
 
     const results = await Promise.all(promises);
@@ -585,12 +589,12 @@ export class CentralControlService {
     try {
       for (const step of workflow.steps) {
         try {
-          const module = this.modules.get(step.module_id);
-          if (!module) {
+          const moduleInstance = this.modules.get(step.module_id);
+          if (!moduleInstance) {
             throw new Error(`Module not found: ${step.module_id}`);
           }
 
-          const stepResult = await this.executeModule(module, {
+          const stepResult = await this.executeModule(moduleInstance, {
             ...triggerData,
             ...step.parameters
           });
@@ -650,7 +654,7 @@ export class CentralControlService {
     let totalSuccessRate = 0;
     let activeModules = 0;
 
-    for (const [moduleId, module] of this.modules) {
+    for (const [moduleId, module] of Array.from(this.modules.entries())) {
       // Determine module health based on performance metrics
       if (module.status !== 'active') {
         moduleHealth[moduleId] = 'unhealthy';
@@ -671,7 +675,7 @@ export class CentralControlService {
 
     const systemMetrics: SystemMetrics = {
       total_modules: this.modules.size,
-      active_modules,
+      active_modules: activeModules,
       average_response_time: averageResponseTime,
       system_uptime: averageUptime,
       error_rate: 100 - averageSuccessRate,
@@ -709,8 +713,8 @@ export class CentralControlService {
 
     return {
       overall_status: overallStatus,
-      module_health,
-      system_metrics,
+      module_health: moduleHealth,
+      system_metrics: systemMetrics,
       active_alerts: this.alerts.filter(alert => !alert.resolved),
       recommendations,
       last_check: new Date()
@@ -759,8 +763,8 @@ export class CentralControlService {
       coordination_strategies: Array.from(this.strategies.values()),
       performance_metrics: {
         total_modules: this.modules.size,
-        active_modules,
-        average_response_time,
+        active_modules: activeModules,
+        average_response_time: averageResponseTime,
         system_uptime: 99.5,
         error_rate: 2.5,
         throughput: 500,

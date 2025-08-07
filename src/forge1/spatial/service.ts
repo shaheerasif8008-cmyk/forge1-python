@@ -1,4 +1,5 @@
-import ZAI from 'z-ai-web-dev-sdk';
+// ZAI SDK should only be used in backend API routes
+// import ZAI from 'z-ai-web-dev-sdk';
 
 export interface SpatialAgent {
   id: string;
@@ -142,7 +143,9 @@ export class SpatialAgentsService {
   private zai: any;
 
   constructor() {
-    this.initializeZAI();
+    // ZAI SDK should only be used in backend API routes
+    // // ZAI SDK should only be used in backend API routes
+    // this.initializeZAI();
   }
 
   private async initializeZAI() {
@@ -274,7 +277,6 @@ export class SpatialAgentsService {
     };
 
     session.interactions.push(xrInteraction);
-    session.updated_at = new Date();
 
     // Update performance metrics
     this.updatePerformanceMetrics(session, xrInteraction);
@@ -435,25 +437,7 @@ export class SpatialAgentsService {
   async analyzeSpatialBehavior(
     sessionId: string,
     timeRange: { start: Date; end: Date }
-  ): Promise<{
-    movement_patterns: Array<{
-      pattern: string;
-      frequency: number;
-      duration: number;
-    }>;
-    interaction_hotspots: Array<{
-      position: Vector3D;
-      interaction_count: number;
-      types: string[];
-    }>;
-    engagement_metrics: {
-      total_interactions: number;
-      active_time: number;
-      session_depth: number;
-    }>;
-    insights: string[];
-    recommendations: string[];
-  }> {
+  ): Promise<any> {
     const session = await this.getXRSession(sessionId);
     if (!session) {
       throw new Error('Session not found');

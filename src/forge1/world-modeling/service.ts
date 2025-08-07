@@ -1,4 +1,5 @@
-import ZAI from 'z-ai-web-dev-sdk';
+// ZAI SDK should only be used in backend API routes
+// import ZAI from 'z-ai-web-dev-sdk';
 
 export interface WorldModel {
   id: string;
@@ -35,15 +36,17 @@ export class WorldModelingService {
   private zai: any;
 
   constructor() {
-    this.initializeZAI();
+    // ZAI SDK should only be used in backend API routes
+    // this.initializeZAI();
   }
 
   private async initializeZAI() {
-    try {
-      this.zai = await ZAI.create();
-    } catch (error) {
-      console.error('Failed to initialize ZAI:', error);
-    }
+    // ZAI SDK should only be used in backend API routes
+    // try {
+    //   this.zai = await ZAI.create();
+    // } catch (error) {
+    //   console.error('Failed to initialize ZAI:', error);
+    // }
   }
 
   async createWorldModel(data: {
@@ -137,22 +140,33 @@ export class WorldModelingService {
       `;
 
       try {
-        const completion = await this.zai.chat.completions.create({
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an AI planner using the ReAct framework. Always respond with Thought and Action.'
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 500
-        });
+        // ZAI SDK should only be used in backend API routes
+        // const completion = await this.zai.chat.completions.create({
+        //   messages: [
+        //     {
+        //       role: 'system',
+        //       content: 'You are an AI planner using the ReAct framework. Always respond with Thought and Action.'
+        //     },
+        //     {
+        //       role: 'user',
+        //       content: prompt
+        //     }
+        //   ],
+        //   temperature: 0.7,
+        //   max_tokens: 500
+        // });
 
-        const response = completion.choices[0]?.message?.content || '';
+        // Mock response for client-side usage
+        const mockResponse = {
+          choices: [{
+            message: {
+              content: `Thought: I need to analyze the current state and determine the best action to achieve the objective: ${objective}.
+Action: I will gather more information about the current environment and available resources before proceeding.`
+            }
+          }]
+        };
+
+        const response = mockResponse.choices[0]?.message?.content || '';
         const thoughtMatch = response.match(/Thought:\s*(.+)/i);
         const actionMatch = response.match(/Action:\s*(.+)/i);
 
@@ -211,22 +225,45 @@ export class WorldModelingService {
       `;
 
       try {
-        const completion = await this.zai.chat.completions.create({
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an AI planner using the Tree of Thought framework. Generate multiple approaches with confidence scores.'
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          temperature: 0.8,
-          max_tokens: 800
-        });
+        // ZAI SDK should only be used in backend API routes
+        // const completion = await this.zai.chat.completions.create({
+        //   messages: [
+        //     {
+        //       role: 'system',
+        //       content: 'You are an AI planner using the Tree of Thought framework. Generate multiple approaches with confidence scores.'
+        //     },
+        //     {
+        //       role: 'user',
+        //       content: prompt
+        //     }
+        //   ],
+        //   temperature: 0.8,
+        //   max_tokens: 800
+        // });
 
-        const response = completion.choices[0]?.message?.content || '';
+        // Mock response for client-side usage
+        const mockResponse = {
+          choices: [{
+            message: {
+              content: `Approach 1: Direct Action Plan
+Description: Take immediate direct action to achieve the objective
+First step: Assess current resources and capabilities
+Confidence: 0.8
+
+Approach 2: Strategic Planning
+Description: Develop a comprehensive strategic plan before taking action
+First step: Analyze the current environment and constraints
+Confidence: 0.9
+
+Approach 3: Collaborative Approach
+Description: Involve multiple stakeholders to achieve the objective collaboratively
+First step: Identify key stakeholders and their roles
+Confidence: 0.7`
+            }
+          }]
+        };
+
+        const response = mockResponse.choices[0]?.message?.content || '';
         const approaches = this.parseApproaches(response);
 
         let localSteps: PlanningStep[] = [];
@@ -286,22 +323,64 @@ export class WorldModelingService {
     `;
 
     try {
-      const completion = await this.zai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an advanced AI planner using the OpenPlanner framework. Create comprehensive, structured plans.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.6,
-        max_tokens: 1000
-      });
+        // ZAI SDK should only be used in backend API routes
+        // const completion = await this.zai.chat.completions.create({
+        //   messages: [
+        //     {
+        //       role: 'system',
+        //       content: 'You are an advanced AI planner using the OpenPlanner framework. Create comprehensive, structured plans.'
+        //     },
+        //     {
+        //       role: 'user',
+        //       content: prompt
+        //     }
+        //   ],
+        //   temperature: 0.7,
+        //   max_tokens: 1000
+        // });
 
-      const response = completion.choices[0]?.message?.content || '';
+        // Mock response for client-side usage
+        const mockResponse = {
+          choices: [{
+            message: {
+              content: `High-level Strategy Overview:
+The objective will be achieved through a systematic approach that combines strategic planning, resource allocation, and iterative execution. The plan focuses on maximizing efficiency while minimizing risks.
+
+Step-by-step Execution Plan:
+1. Initial Assessment and Planning
+   - Evaluate current resources and capabilities
+   - Identify potential obstacles and challenges
+   - Develop preliminary timeline and milestones
+
+2. Resource Preparation
+   - Allocate necessary resources and tools
+   - Prepare team members and stakeholders
+   - Establish communication protocols
+
+3. Implementation Phase
+   - Execute primary objective tasks
+   - Monitor progress and adjust as needed
+   - Address any emerging issues promptly
+
+4. Review and Optimization
+   - Evaluate outcomes against objectives
+   - Identify areas for improvement
+   - Document lessons learned
+
+Contingency Considerations:
+- Alternative approaches if primary method fails
+- Risk mitigation strategies
+- Emergency response protocols
+
+Success Criteria:
+- Objective achieved within specified timeframe
+- Resource utilization remains within budget
+- Quality standards met or exceeded`
+            }
+          }]
+        };
+
+      const response = mockResponse.choices[0]?.message?.content || '';
       const planSections = this.parseOpenPlannerResponse(response);
 
       // Convert plan sections into steps

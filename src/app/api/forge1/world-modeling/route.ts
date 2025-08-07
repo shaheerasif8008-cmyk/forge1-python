@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { WorldModelingService } from '@/forge1/world-modeling/service';
+import ZAI from 'z-ai-web-dev-sdk';
 
 const worldModelingService = new WorldModelingService();
+let zaiInstance: any = null;
+
+async function getZAI() {
+  if (!zaiInstance) {
+    zaiInstance = await ZAI.create();
+  }
+  return zaiInstance;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,8 +18,8 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'create_world_model':
-        const worldModel = await worldModelingService.createWorldModel(data);
-        return NextResponse.json({ success: true, data: worldModel });
+        const newWorldModel = await worldModelingService.createWorldModel(data);
+        return NextResponse.json({ success: true, data: newWorldModel });
 
       case 'generate_plan':
         const { worldModelId, objective, method } = data;

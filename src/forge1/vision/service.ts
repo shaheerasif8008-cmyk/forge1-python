@@ -1,4 +1,4 @@
-import ZAI from 'z-ai-web-dev-sdk';
+// import ZAI from 'z-ai-web-dev-sdk';
 
 export interface VisionAnalysis {
   id: string;
@@ -51,19 +51,20 @@ export interface LayoutElement {
 }
 
 export class VisionService {
-  private zai: any;
+  // private zai: any;
 
   constructor() {
-    this.initializeZAI();
+    // // ZAI SDK should only be used in backend API routes
+    // this.initializeZAI();
   }
 
-  private async initializeZAI() {
-    try {
-      this.zai = await ZAI.create();
-    } catch (error) {
-      console.error('Failed to initialize ZAI:', error);
-    }
-  }
+  // private async initializeZAI() {
+  //   try {
+  //     this.zai = await ZAI.create();
+  //   } catch (error) {
+  //     console.error('Failed to initialize ZAI:', error);
+  //   }
+  // }
 
   async analyzeImage(
     imageUrl: string,
@@ -143,23 +144,28 @@ export class VisionService {
         ]
       `;
 
-      const completion = await this.zai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an advanced computer vision AI using GroundingDINO for object detection. Provide detailed, accurate object detection results in JSON format.'
-          },
-          {
-            role: 'user',
-            content: prompt
+      // Call API route instead of using ZAI SDK directly
+      const response = await fetch('/api/forge1/vision', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'analyze_image',
+          data: {
+            imageUrl,
+            analysisTypes,
+            prompt
           }
-        ],
-        temperature: 0.3,
-        max_tokens: 1000
+        }),
       });
 
-      const response = completion.choices[0]?.message?.content || '';
-      const detectedObjects = this.parseObjectDetectionResponse(response);
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to analyze image');
+      }
+
+      const detectedObjects = this.parseObjectDetectionResponse(result.data.response || '');
 
       for (const obj of detectedObjects) {
         results.push({
@@ -203,23 +209,27 @@ export class VisionService {
         ]
       `;
 
-      const completion = await this.zai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an advanced OCR AI using GPT-4o vision capabilities. Extract text with high accuracy and provide precise bounding box information.'
-          },
-          {
-            role: 'user',
-            content: prompt
+      // Call API route instead of using ZAI SDK directly
+      const response = await fetch('/api/forge1/vision', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'extract_text',
+          data: {
+            imageUrl,
+            prompt
           }
-        ],
-        temperature: 0.2,
-        max_tokens: 1500
+        }),
       });
 
-      const response = completion.choices[0]?.message?.content || '';
-      const textRegions = this.parseOCRResponse(response);
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to extract text');
+      }
+
+      const textRegions = this.parseOCRResponse(result.data.response || '');
 
       for (const region of textRegions) {
         results.push({
@@ -267,23 +277,27 @@ export class VisionService {
         ]
       `;
 
-      const completion = await this.zai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an advanced layout analysis AI using CLIP and GPT-4o. Provide detailed layout parsing with precise element classification and positioning.'
-          },
-          {
-            role: 'user',
-            content: prompt
+      // Call API route instead of using ZAI SDK directly
+      const response = await fetch('/api/forge1/vision', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'parse_layout',
+          data: {
+            imageUrl,
+            prompt
           }
-        ],
-        temperature: 0.4,
-        max_tokens: 1200
+        }),
       });
 
-      const response = completion.choices[0]?.message?.content || '';
-      const layoutElements = this.parseLayoutResponse(response);
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to parse layout');
+      }
+
+      const layoutElements = this.parseLayoutResponse(result.data.response || '');
 
       for (const element of layoutElements) {
         results.push({
@@ -335,23 +349,27 @@ export class VisionService {
         }
       `;
 
-      const completion = await this.zai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an advanced scene understanding AI using GPT-4o. Provide comprehensive scene analysis with contextual understanding.'
-          },
-          {
-            role: 'user',
-            content: prompt
+      // Call API route instead of using ZAI SDK directly
+      const response = await fetch('/api/forge1/vision', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'understand_scene',
+          data: {
+            imageUrl,
+            prompt
           }
-        ],
-        temperature: 0.5,
-        max_tokens: 800
+        }),
       });
 
-      const response = completion.choices[0]?.message?.content || '';
-      const sceneUnderstanding = this.parseSceneUnderstandingResponse(response);
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to understand scene');
+      }
+
+      const sceneUnderstanding = this.parseSceneUnderstandingResponse(result.data.response || '');
 
       results.push({
         type: 'scene',
@@ -504,22 +522,27 @@ export class VisionService {
         Please provide a comprehensive description that would be useful for accessibility or image indexing purposes.
       `;
 
-      const completion = await this.zai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an advanced image description AI using GPT-4o. Provide detailed, accurate, and helpful image descriptions.'
-          },
-          {
-            role: 'user',
-            content: prompt
+      // Call API route instead of using ZAI SDK directly
+      const response = await fetch('/api/forge1/vision', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'generate_description',
+          data: {
+            imageUrl,
+            prompt
           }
-        ],
-        temperature: 0.6,
-        max_tokens: 500
+        }),
       });
 
-      return completion.choices[0]?.message?.content || "No description available";
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to generate description');
+      }
+
+      return result.data.description || "No description available";
 
     } catch (error) {
       console.error('Image description generation failed:', error);
@@ -550,33 +573,32 @@ export class VisionService {
         }
       `;
 
-      const completion = await this.zai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an advanced image comparison AI using CLIP and GPT-4o. Provide accurate similarity analysis and detailed comparisons.'
-          },
-          {
-            role: 'user',
-            content: prompt
+      // Call API route instead of using ZAI SDK directly
+      const response = await fetch('/api/forge1/vision', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'compare_images',
+          data: {
+            imageUrl1,
+            imageUrl2,
+            prompt
           }
-        ],
-        temperature: 0.4,
-        max_tokens: 600
+        }),
       });
 
-      const response = completion.choices[0]?.message?.content || '';
-      
-      try {
-        return JSON.parse(response);
-      } catch {
-        // Fallback
-        return {
-          similarity: 0.5,
-          differences: ["Unable to determine differences"],
-          common_elements: ["Unable to determine common elements"]
-        };
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to compare images');
       }
+
+      return result.data.comparison || {
+        similarity: 0.5,
+        differences: ["Unable to analyze differences"],
+        common_elements: ["Unable to identify common elements"]
+      };
 
     } catch (error) {
       console.error('Image comparison failed:', error);

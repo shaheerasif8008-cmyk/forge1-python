@@ -11,8 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
-  Cube, 
-  VrCardboard, 
+  Box, 
   Smartphone, 
   Users, 
   MapPin, 
@@ -192,7 +191,7 @@ export default function SpatialAgentsDashboard() {
   const getAgentTypeIcon = (type: string) => {
     switch (type) {
       case 'vr_guide':
-        return <VrCardboard className="w-4 h-4" />;
+        return <Smartphone className="w-4 h-4" />;
       case 'ar_assistant':
         return <Smartphone className="w-4 h-4" />;
       case 'metaverse_host':
@@ -202,14 +201,14 @@ export default function SpatialAgentsDashboard() {
       case 'xr_trainer':
         return <Settings className="w-4 h-4" />;
       default:
-        return <Cube className="w-4 h-4" />;
+        return <Box className="w-4 h-4" />;
     }
   };
 
   const getEnvironmentTypeIcon = (type: string) => {
     switch (type) {
       case 'vr_room':
-        return <VrCardboard className="w-4 h-4" />;
+        return <Smartphone className="w-4 h-4" />;
       case 'ar_space':
         return <Smartphone className="w-4 h-4" />;
       case 'metaverse_world':
@@ -217,7 +216,7 @@ export default function SpatialAgentsDashboard() {
       case 'mixed_reality_scene':
         return <Layers className="w-4 h-4" />;
       default:
-        return <Cube className="w-4 h-4" />;
+        return <Box className="w-4 h-4" />;
     }
   };
 
@@ -288,7 +287,7 @@ export default function SpatialAgentsDashboard() {
                     <SelectContent>
                       <SelectItem value="vr_guide">
                         <div className="flex items-center space-x-2">
-                          <VrCardboard className="w-4 h-4" />
+                          <Smartphone className="w-4 h-4" />
                           <span>VR Guide</span>
                         </div>
                       </SelectItem>

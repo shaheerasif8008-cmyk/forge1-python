@@ -13,7 +13,7 @@ import {
   Shield, 
   Cloud, 
   Heart, 
-  Cube, 
+  Box, 
   Cpu,
   Network,
   Activity,
@@ -127,7 +127,7 @@ export default function Home() {
       id: "spatial",
       name: "Spatial Agents / XR",
       description: "For future VR/metaverse interfaces",
-      icon: Cube,
+      icon: Box,
       color: "text-cyan-600",
       bgColor: "bg-cyan-50",
       status: "active"

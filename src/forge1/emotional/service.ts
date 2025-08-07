@@ -1,4 +1,5 @@
-import ZAI from 'z-ai-web-dev-sdk';
+// ZAI SDK should only be used in backend API routes
+// import ZAI from 'z-ai-web-dev-sdk';
 
 export interface EmotionalAnalysis {
   id: string;
@@ -138,7 +139,8 @@ export class EmotionalAIService {
   private zai: any;
 
   constructor() {
-    this.initializeZAI();
+    // ZAI SDK should only be used in backend API routes
+    // this.initializeZAI();
   }
 
   private async initializeZAI() {

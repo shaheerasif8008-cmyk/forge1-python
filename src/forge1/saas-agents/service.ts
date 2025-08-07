@@ -1,4 +1,5 @@
-import ZAI from 'z-ai-web-dev-sdk';
+// ZAI SDK should only be used in backend API routes
+// import ZAI from 'z-ai-web-dev-sdk';
 
 export interface SaaSAgent {
   id: string;
@@ -103,7 +104,8 @@ export class SaaSAgentsService {
   private zai: any;
 
   constructor() {
-    this.initializeZAI();
+    // ZAI SDK should only be used in backend API routes
+    // this.initializeZAI();
   }
 
   private async initializeZAI() {

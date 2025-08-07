@@ -1,4 +1,5 @@
-import ZAI from 'z-ai-web-dev-sdk';
+// ZAI SDK should only be used in backend API routes
+// import ZAI from 'z-ai-web-dev-sdk';
 
 export interface ComplianceCheck {
   id: string;
@@ -72,7 +73,8 @@ export class ComplianceService {
   private zai: any;
 
   constructor() {
-    this.initializeZAI();
+    // ZAI SDK should only be used in backend API routes
+    // this.initializeZAI();
   }
 
   private async initializeZAI() {
@@ -325,7 +327,7 @@ export class ComplianceService {
     intervalMs: number = 60000
   ): Promise<AsyncIterable<ComplianceCheck>> {
     // Return an async iterable for continuous monitoring
-    const asyncIterable: AsyncIterable<ComplianceCheck> = {
+    const asyncIterable = {
       async *[Symbol.asyncIterator]() {
         while (true) {
           try {
@@ -336,7 +338,7 @@ export class ComplianceService {
           }
           await new Promise(resolve => setTimeout(resolve, intervalMs));
         }
-      }.bind(this)
+      }
     };
 
     return asyncIterable;
